@@ -20,20 +20,33 @@ button.switch_to_input(pull=digitalio.Pull.UP)
 switch = Debouncer(button)
 # Setup Status
 status = True
+direction = 0
+last_movement = time.monotonic()
 
 while True:
+    now = time.monotonic()
     switch.update()
     if switch.fell:
         status = not status
     if status == True:
         led.value = False
-        m.move(80,0,0)
-        time.sleep(0.1)
-        m.move(0,80,0)
-        time.sleep(0.1)
-        m.move(-80,0,0)
-        time.sleep(0.1)
-        m.move(0,-80,0)
-        time.sleep(0.1)
+        if (now - last_movement > 2) and direction == 0:
+            m.move(80,0,0)
+            direction += 1
+            last_movement = time.monotonic()
+        if (now - last_movement > 4) and direction == 1:
+            m.move(0,80,0)
+            direction += 1
+            last_movement = time.monotonic()
+        if (now - last_movement > 6) and direction == 2:
+            m.move(-80,0,0)
+            direction += 1
+            last_movement = time.monotonic()
+        if (now - last_movement > 8) and direction == 3:
+            m.move(0,-80,0)
+            direction = 0
+            last_movement = time.monotonic()
     else:
         led.value = True
+        direction = 0
+        last_movement = time.monotonic()
