@@ -33,7 +33,15 @@ status = False#start mouse movements disabled
 direction = 0
 last_movement = time.monotonic()
 delta = 10
+ble = None
 
+def start_bluetooth():
+    ble = BLERadio()
+    uart = UARTService()
+    uart.init(timeout=1000) # init with given parameters
+    advertisement = ProvideServicesAdvertisement(uart)
+    ble.start_advertising(advertisement)
+    print("Waiting to connect")
  
 
 while True:
@@ -47,8 +55,9 @@ while True:
 
             if time_since_last_press < double_press_threshold:
                 # Double press detected, simulate key presses
-                keyboard.press(Keycode.D)  # Replace with the desired key or key combination
-                keyboard.release_all()
+                #keyboard.press(Keycode.D)  # Replace with the desired key or key combination
+                #keyboard.release_all()
+                start_bluetooth()
                 status = False #stop jiggling
             else: #single digit
                 status = not status
@@ -82,3 +91,13 @@ while True:
 
     # Add a small delay to avoid excessive checking
     time.sleep(0.01)
+
+# if ble and ble.connected:
+#        s = uart.readline()
+#        if s:
+#            try:
+#                keyboard_layout.write(str(s.decode()))
+#            except Exception as e:
+#                print(e)
+#                uart.write(f"{e} - ERROR\n".encode("utf-8"))
+#            uart.write(f"{str(s.decode())} - DONE\n".encode("utf-8"))
