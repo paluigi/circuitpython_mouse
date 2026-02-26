@@ -40,7 +40,12 @@ Press the button on the board to toggle the auto-movement on/off. The LED indica
 
 ### Bluetooth (BLE UART)
 
-The board advertises a Nordic UART BLE service. Connect using any BLE UART app (e.g. [Adafruit Bluefruit Connect](https://learn.adafruit.com/bluefruit-le-connect)) and send the following text commands (terminated with a newline):
+The board advertises a Nordic UART BLE service. You can connect using:
+
+- The **Progressive Web App** in `app/` (see [Web App](#web-app) section below)
+- Any BLE UART app such as [Adafruit Bluefruit Connect](https://learn.adafruit.com/bluefruit-le-connect)
+
+Send the following text commands (terminated with a newline):
 
 | Command       | Action                                      |
 |---------------|---------------------------------------------|
@@ -58,12 +63,52 @@ The board re-advertises automatically after a disconnect.
 
 ---
 
+## Web App
+
+A Progressive Web App (PWA) is included in `app/` to control the device from Android (or any browser with Web Bluetooth support, such as Chrome on Android or desktop Chrome/Edge).
+
+### Features
+
+- Connect / disconnect to the board via BLE
+- Buttons for all commands: Start, Stop, Toggle, Click (L/M/R), Scroll
+- Move controls: X/Y number inputs and an arrow pad
+- Custom command text box — type any command and press Send or Enter
+- Live log showing sent commands and replies from the device
+- Installable on Android as a home screen app (PWA)
+
+### Requirements
+
+- Chrome on Android (or any Chromium-based browser with Web Bluetooth)
+- The app **must be served over HTTPS** — Web Bluetooth does not work over plain HTTP
+
+### Running Locally
+
+```bash
+npx serve app/
+```
+
+Then open the printed HTTPS URL on your phone. Alternatively, deploy the `app/` folder to any static HTTPS host (GitHub Pages, Netlify, etc.).
+
+### Installing on Android
+
+1. Open the app URL in Chrome
+2. Tap the menu → **Add to Home Screen**
+3. The app installs like a native app and works offline
+
+---
+
 ## Project Structure
 
 ```
+app/
+├── index.html           # UI (buttons, inputs, log)
+├── app.js               # Web Bluetooth + command logic
+├── manifest.json        # PWA manifest
+└── service-worker.js    # Offline caching
+
 device/
-├── code.py          # Main CircuitPython script
-├── firmware/        # CircuitPython 10.1.3 firmware (.uf2)
+├── code.py              # Main CircuitPython script
+├── firmware/            # Bootloader updater + CircuitPython 10.1.3 (.uf2)
 └── lib/
     ├── adafruit_ble/          # BLE + Nordic UART service
     ├── adafruit_hid/          # USB HID (mouse)
