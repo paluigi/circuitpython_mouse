@@ -119,3 +119,9 @@ device/
 ---
 
 Enjoy!
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE) for details.
