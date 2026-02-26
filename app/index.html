@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1a1a2e" />
+  <title>BLE Mouse Controller</title>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #16213e;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #0f3460;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    header h1 { font-size: 1.1rem; font-weight: 600; letter-spacing: 0.02em; }
+
+    #status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    #status-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #555;
+      transition: background 0.3s;
+    }
+    #status-dot.connected { background: #4ade80; }
+    #status-dot.connecting { background: #facc15; animation: pulse 1s infinite; }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    main {
+      flex: 1;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      max-width: 480px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #16213e;
+      border: 1px solid #0f3460;
+      border-radius: 12px;
+      padding: 1rem;
+    }
+
+    .card h2 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #888;
+      margin-bottom: 0.85rem;
+    }
+
+    .btn-grid {
+      display: grid;
+      gap: 0.6rem;
+    }
+    .btn-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+    .btn-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+    button {
+      padding: 0.7rem 0.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      letter-spacing: 0.02em;
+    }
+    button:active { transform: scale(0.96); }
+    button:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+    .btn-primary   { background: #0f3460; color: #e0e0e0; }
+    .btn-green     { background: #166534; color: #bbf7d0; }
+    .btn-red       { background: #7f1d1d; color: #fecaca; }
+    .btn-yellow    { background: #713f12; color: #fef08a; }
+    .btn-blue      { background: #1e3a5f; color: #bfdbfe; }
+    .btn-connect   { background: #0f3460; color: #e0e0e0; min-width: 110px; }
+    .btn-connect.connected { background: #7f1d1d; color: #fecaca; }
+    .btn-send      { background: #0f3460; color: #e0e0e0; white-space: nowrap; }
+
+    .input-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .input-row label {
+      font-size: 0.8rem;
+      color: #aaa;
+      white-space: nowrap;
+      min-width: 1.5rem;
+    }
+
+    input[type="number"], input[type="text"] {
+      flex: 1;
+      background: #0f3460;
+      border: 1px solid #1e4480;
+      border-radius: 6px;
+      color: #e0e0e0;
+      padding: 0.55rem 0.6rem;
+      font-size: 0.9rem;
+      outline: none;
+      min-width: 0;
+    }
+    input[type="number"]:focus, input[type="text"]:focus {
+      border-color: #3b82f6;
+    }
+
+    #log {
+      background: #0d1117;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      padding: 0.6rem 0.75rem;
+      font-family: monospace;
+      font-size: 0.75rem;
+      color: #4ade80;
+      height: 80px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column-reverse;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>BLE Mouse Controller</h1>
+  <div id="status">
+    <span id="status-dot"></span>
+    <span id="status-text">Disconnected</span>
+  </div>
+  <button class="btn-connect" id="btn-connect">Connect</button>
+</header>
+
+<main>
+
+  <!-- Auto-movement -->
+  <div class="card">
+    <h2>Auto-movement</h2>
+    <div class="btn-grid cols-3">
+      <button class="btn-green"  data-cmd="START"  disabled>Start</button>
+      <button class="btn-red"    data-cmd="STOP"   disabled>Stop</button>
+      <button class="btn-yellow" data-cmd="TOGGLE" disabled>Toggle</button>
+    </div>
+  </div>
+
+  <!-- Move -->
+  <div class="card">
+    <h2>Move</h2>
+    <div style="display:flex;flex-direction:column;gap:0.5rem;">
+      <div class="input-row">
+        <label>X</label>
+        <input type="number" id="move-x" value="50" min="-127" max="127" />
+        <label>Y</label>
+        <input type="number" id="move-y" value="0" min="-127" max="127" />
+        <button class="btn-blue" id="btn-move" disabled>Move</button>
+      </div>
+      <div class="btn-grid cols-3" style="margin-top:0.25rem;">
+        <button class="btn-primary" data-move="0,-50"  disabled>▲</button>
+        <button class="btn-primary" data-move="-50,0"  disabled>◀</button>
+        <button class="btn-primary" data-move="50,0"   disabled>▶</button>
+      </div>
+      <div style="display:flex;justify-content:center;">
+        <button class="btn-primary" data-move="0,50" style="width:33%" disabled>▼</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Click -->
+  <div class="card">
+    <h2>Click</h2>
+    <div class="btn-grid cols-3">
+      <button class="btn-blue" data-cmd="CLICK LEFT"   disabled>Left</button>
+      <button class="btn-blue" data-cmd="CLICK MIDDLE" disabled>Middle</button>
+      <button class="btn-blue" data-cmd="CLICK RIGHT"  disabled>Right</button>
+    </div>
+  </div>
+
+  <!-- Scroll -->
+  <div class="card">
+    <h2>Scroll</h2>
+    <div class="input-row">
+      <input type="number" id="scroll-amount" value="3" min="-127" max="127" />
+      <button class="btn-blue" id="btn-scroll-up"   disabled>▲ Up</button>
+      <button class="btn-blue" id="btn-scroll-down" disabled>▼ Down</button>
+    </div>
+  </div>
+
+  <!-- Custom command -->
+  <div class="card">
+    <h2>Custom Command</h2>
+    <div class="input-row">
+      <input type="text" id="custom-cmd" placeholder="e.g. MOVE 100 -50" />
+      <button class="btn-send" id="btn-custom" disabled>Send</button>
+    </div>
+  </div>
+
+  <!-- Log -->
+  <div id="log"><span style="color:#555">— ready —</span></div>
+
+</main>
+
+<script src="app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js');
+  }
+</script>
+</body>
+</html>
