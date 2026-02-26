@@ -11,13 +11,13 @@ Configured for the [MDBT50Q-RX](https://circuitpython.org/board/raytac_mdbt50q-r
 
 ### Step 1 — Update the Bootloader (if needed)
 
-1. Double-press the reset button — the board appears as a `MDBT50QRX` USB drive
+1. Hold the button and plug the board into USB — it appears as a `MDBT50QRX` USB drive
 2. Drag `device/firmware/update-raytac_mdbt50q_rx_bootloader-0.10.0_nosd.uf2` onto the drive
 3. The board will reboot back into bootloader mode with version 0.10.0
 
 ### Step 2 — Flash CircuitPython
 
-1. Double-press reset again to enter bootloader mode (`MDBT50QRX` drive)
+1. Hold the button and plug in again to enter bootloader mode (`MDBT50QRX` drive)
 2. Drag `device/firmware/adafruit-circuitpython-raytac_mdbt50q-rx-en_US-10.1.3.uf2` onto the drive
 3. The board will reboot and appear as a `CIRCUITPY` USB drive
 
