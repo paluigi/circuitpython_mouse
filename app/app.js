@@ -94,15 +94,30 @@ async function connect() {
     addLog('— GATT connecting…', '#888');
     const server = await bleDevice.gatt.connect();
     addLog('— GATT connected, waiting…', '#888');
-    await new Promise(r => setTimeout(r, 1000));
+    await new Promise(r => setTimeout(r, 2000));
     addLog('— getting service…', '#888');
-    // getPrimaryServices(uuid) scopes discovery to just the NUS service,
-    // avoiding the hang that occurs when listing all services on Android Chrome
-    const matched = await server.getPrimaryServices(NUS_SERVICE_UUID);
-    if (!matched || matched.length === 0) {
-      throw new Error('NUS UART service not found on device');
+
+    const withTimeout = (promise, ms, label) => Promise.race([
+      promise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error(label + ' timed out after ' + ms / 1000 + 's')), ms))
+    ]);
+
+    let service;
+    try {
+      service = await withTimeout(server.getPrimaryService(NUS_SERVICE_UUID), 8000, 'getPrimaryService');
+      addLog('— service found (singular)', '#888');
+    } catch (e1) {
+      addLog('! singular failed: ' + e1.message + ' — trying plural…', '#facc15');
+      try {
+        const matched = await withTimeout(server.getPrimaryServices(NUS_SERVICE_UUID), 8000, 'getPrimaryServices');
+        if (!matched || matched.length === 0) throw new Error('NUS service not found');
+        service = matched[0];
+        addLog('— service found (plural)', '#888');
+      } catch (e2) {
+        addLog('! plural failed: ' + e2.message, '#f87171');
+        throw e2;
+      }
     }
-    const service = matched[0];
     addLog('— service found, getting RX characteristic…', '#888');
     rxCharacteristic = await service.getCharacteristic(NUS_RX_UUID);
     addLog('— RX ready', '#888');
