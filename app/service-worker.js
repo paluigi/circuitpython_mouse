@@ -1,4 +1,4 @@
-const CACHE = 'ble-mouse-v4';
+const CACHE = 'ble-mouse-v5';
 
 // Derive base path from the SW location so it works under any subpath
 // e.g. if served at /mouse/, BASE = '/mouse/'

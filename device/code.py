@@ -3,6 +3,8 @@ import board
 import digitalio
 import usb_hid
 from adafruit_hid.mouse import Mouse
+from adafruit_hid.keyboard import Keyboard
+from adafruit_hid.keyboard_layout_us import KeyboardLayoutUS
 from adafruit_debouncer import Debouncer
 import adafruit_ble
 from adafruit_ble.advertising.standard import ProvideServicesAdvertisement
@@ -15,6 +17,8 @@ time.sleep(10)
 # Setup mouse
 print("setting up mouse...")
 m = Mouse(usb_hid.devices)
+kbd = Keyboard(usb_hid.devices)
+layout = KeyboardLayoutUS(kbd)
 
 # Setup LED
 led = digitalio.DigitalInOut(board.INVERTED_LED)
@@ -44,36 +48,42 @@ last_movement = time.monotonic()
 
 def handle_command(cmd):
     global status, direction, last_movement
-    cmd = cmd.strip().upper()
+    cmd = cmd.strip()
     parts = cmd.split()
+    verb = parts[0].upper() if parts else ""
     if not parts:
         return
-    if parts[0] == "TOGGLE":
+    if verb == "TOGGLE":
         status = not status
         direction = 0
         last_movement = time.monotonic()
-    elif parts[0] == "START":
+    elif verb == "START":
         status = True
-    elif parts[0] == "STOP":
+    elif verb == "STOP":
         status = False
         direction = 0
         last_movement = time.monotonic()
-    elif parts[0] == "MOVE" and len(parts) >= 3:
+    elif verb == "MOVE" and len(parts) >= 3:
         try:
             m.move(int(parts[1]), int(parts[2]), 0)
         except ValueError:
             pass
-    elif parts[0] == "CLICK":
-        btn = parts[1] if len(parts) > 1 else "LEFT"
+    elif verb == "CLICK":
+        btn = parts[1].upper() if len(parts) > 1 else "LEFT"
         if btn == "RIGHT":
             m.click(Mouse.RIGHT_BUTTON)
         elif btn == "MIDDLE":
             m.click(Mouse.MIDDLE_BUTTON)
         else:
             m.click(Mouse.LEFT_BUTTON)
-    elif parts[0] == "SCROLL" and len(parts) >= 2:
+    elif verb == "SCROLL" and len(parts) >= 2:
         try:
             m.move(0, 0, int(parts[1]))
+        except ValueError:
+            pass
+    elif verb == "TYPE" and len(cmd) > 5:
+        try:
+            layout.write(cmd[5:])
         except ValueError:
             pass
 

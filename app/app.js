@@ -17,7 +17,7 @@ const btnCustom     = document.getElementById('btn-custom');
 const customInput   = document.getElementById('custom-cmd');
 
 // All buttons that require a BLE connection
-const cmdButtons = document.querySelectorAll('[data-cmd], [data-move], #btn-move, #btn-scroll-up, #btn-scroll-down, #btn-custom');
+const cmdButtons = document.querySelectorAll('[data-cmd], [data-move], #btn-move, #btn-scroll-up, #btn-scroll-down, #btn-custom, #btn-type');
 
 // --- Logging ---
 function addLog(msg, color = '#4ade80') {
@@ -45,7 +45,10 @@ window.addEventListener('unhandledrejection', e => {
 // --- BLE send ---
 async function sendCommand(cmd) {
   if (!rxCharacteristic) return;
-  const line = cmd.trim().toUpperCase() + '\n';
+  const trimmed = cmd.trim();
+  const upper = trimmed.toUpperCase();
+  // Preserve original case for TYPE so the text is typed as-is
+  const line = (upper.startsWith('TYPE ') ? 'TYPE ' + trimmed.slice(5) : upper) + '\n';
   const data = new TextEncoder().encode(line);
   try {
     await rxCharacteristic.writeValue(data);
@@ -177,4 +180,15 @@ btnCustom.addEventListener('click', () => {
 });
 customInput.addEventListener('keydown', e => {
   if (e.key === 'Enter') btnCustom.click();
+});
+
+// --- Type text ---
+const btnType    = document.getElementById('btn-type');
+const typeInput  = document.getElementById('type-text');
+btnType.addEventListener('click', () => {
+  const text = typeInput.value;
+  if (text) { sendCommand('TYPE ' + text); typeInput.value = ''; }
+});
+typeInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') btnType.click();
 });

@@ -15,6 +15,9 @@ button { font-size:18px; padding:10px; margin-bottom:20px; }
 <h2>BLE Debug Console</h2>
 <button onclick="connect()">Connect BLE Device</button>
 <button id="btn-toggle" onclick="sendCmd('TOGGLE')" disabled>Start / Stop</button>
+<br><br>
+<input id="type-input" type="text" placeholder="text to type..." style="font-size:16px;padding:8px;width:260px" />
+<button id="btn-type" onclick="typeText()" disabled>Type</button>
 <div id="log"></div>
 
 <script>
@@ -29,6 +32,11 @@ function log(msg, isError = false) {
     logDiv.appendChild(line);
     logDiv.scrollTop = logDiv.scrollHeight;
     console.log(msg);
+}
+
+function typeText() {
+    const text = document.getElementById('type-input').value;
+    if (text) { sendCmd('TYPE ' + text); document.getElementById('type-input').value = ''; }
 }
 
 async function sendCmd(cmd) {
@@ -60,6 +68,7 @@ async function connect() {
             log("⚠️ Device disconnected", true);
             rxChar = null;
             document.getElementById('btn-toggle').disabled = true;
+            document.getElementById('btn-type').disabled = true;
         });
 
         log("Connecting to GATT...");
@@ -78,6 +87,7 @@ async function connect() {
             rxChar = await nusSvc.getCharacteristic(NUS_RX_UUID);
             log("RX characteristic ready");
             document.getElementById('btn-toggle').disabled = false;
+            document.getElementById('btn-type').disabled = false;
         } else {
             log("NUS service not found", true);
         }
