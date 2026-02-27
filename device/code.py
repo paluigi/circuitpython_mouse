@@ -9,9 +9,11 @@ from adafruit_ble.advertising.standard import ProvideServicesAdvertisement
 from adafruit_ble.services.nordic import UARTService
 
 # Wait at the beginning
+print("booting...")
 time.sleep(10)
 
 # Setup mouse
+print("setting up mouse...")
 m = Mouse(usb_hid.devices)
 
 # Setup LED
@@ -25,10 +27,13 @@ button.switch_to_input(pull=digitalio.Pull.UP)
 switch = Debouncer(button)
 
 # Setup BLE UART
+print("setting up BLE...")
 ble = adafruit_ble.BLERadio()
+print("BLE name:", ble.name)
 uart_service = UARTService()
 advertisement = ProvideServicesAdvertisement(uart_service)
 ble.start_advertising(advertisement)
+print("advertising started")
 ble_was_connected = False
 
 # Setup Status
@@ -81,12 +86,17 @@ while True:
 
     # BLE: handle reconnection and incoming commands
     if ble.connected:
+        if not ble_was_connected:
+            print("BLE connected")
         ble_was_connected = True
         if uart_service.in_waiting:
             raw = uart_service.readline()
             if raw:
-                handle_command(raw.decode("utf-8", errors="ignore"))
+                cmd = raw.decode("utf-8", "ignore").strip()
+                print("cmd:", cmd)
+                handle_command(cmd)
     elif ble_was_connected:
+        print("BLE disconnected, re-advertising...")
         ble_was_connected = False
         ble.start_advertising(advertisement)
 
