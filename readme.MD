@@ -81,13 +81,23 @@ A Progressive Web App (PWA) is included in `app/` to control the device from And
 - Chrome on Android (or any Chromium-based browser with Web Bluetooth)
 - The app **must be served over HTTPS** — Web Bluetooth does not work over plain HTTP
 
-### Running Locally
+### Running with Docker
+
+The app is packaged as a Docker container served by nginx. It listens on HTTP port 80 — TLS must be terminated by your reverse proxy (nginx, Traefik, Caddy, etc.), which is required for Web Bluetooth to work.
 
 ```bash
-npx serve app/
+# From the repo root
+docker compose -f app/docker-compose.yml up -d --build
 ```
 
-Then open the printed HTTPS URL on your phone. Alternatively, deploy the `app/` folder to any static HTTPS host (GitHub Pages, Netlify, etc.).
+The app is then available at `http://<server-ip>:8080`. Point your reverse proxy to that address and expose it over HTTPS.
+
+**Reverse proxy example (nginx):**
+```nginx
+location / {
+    proxy_pass http://localhost:8080;
+}
+```
 
 ### Installing on Android
 
@@ -104,7 +114,10 @@ app/
 ├── index.html           # UI (buttons, inputs, log)
 ├── app.js               # Web Bluetooth + command logic
 ├── manifest.json        # PWA manifest
-└── service-worker.js    # Offline caching
+├── service-worker.js    # Offline caching
+├── Dockerfile           # nginx:alpine container
+├── nginx.conf           # nginx config (gzip, caching, SPA fallback)
+└── docker-compose.yml   # Compose file (port 8080)
 
 device/
 ├── code.py              # Main CircuitPython script
