@@ -1,6 +1,6 @@
 # Circuitpython Mouse
 
-Simple project for continuous mouse movement using CircuitPython, controllable via Bluetooth (BLE UART).
+A CircuitPython project for continuous mouse movement and keyboard input, controllable via Bluetooth (BLE UART).
 Configured for the [MDBT50Q-RX](https://circuitpython.org/board/raytac_mdbt50q-rx/) (nRF52840).
 
 ---
@@ -47,17 +47,18 @@ The board advertises a Nordic UART BLE service. You can connect using:
 
 Send the following text commands (terminated with a newline):
 
-| Command       | Action                                      |
-|---------------|---------------------------------------------|
-| `START`       | Enable auto-movement                        |
-| `STOP`        | Disable auto-movement                       |
-| `TOGGLE`      | Toggle auto-movement on/off                 |
-| `MOVE x y`   | Move mouse by x,y pixels (e.g. `MOVE 50 -20`) |
-| `CLICK`       | Left click                                  |
-| `CLICK LEFT`  | Left click                                  |
-| `CLICK RIGHT` | Right click                                 |
-| `CLICK MIDDLE`| Middle click                                |
-| `SCROLL n`    | Scroll by n steps (positive=up, negative=down) |
+| Command         | Action                                                      |
+|-----------------|-------------------------------------------------------------|
+| `START`         | Enable auto-movement                                        |
+| `STOP`          | Disable auto-movement                                       |
+| `TOGGLE`        | Toggle auto-movement on/off                                 |
+| `MOVE x y`      | Move mouse by x,y pixels (e.g. `MOVE 50 -20`)              |
+| `CLICK`         | Left click                                                  |
+| `CLICK LEFT`    | Left click                                                  |
+| `CLICK RIGHT`   | Right click                                                 |
+| `CLICK MIDDLE`  | Middle click                                                |
+| `SCROLL n`      | Scroll by n steps (positive=up, negative=down)              |
+| `TYPE text`     | Type text via USB HID keyboard (printable ASCII only, e.g. `TYPE Hello World`) |
 
 The board re-advertises automatically after a disconnect.
 
@@ -72,9 +73,11 @@ A Progressive Web App (PWA) is included in `app/` to control the device from And
 - Connect / disconnect to the board via BLE
 - Buttons for all commands: Start, Stop, Toggle, Click (L/M/R), Scroll
 - Move controls: X/Y number inputs and an arrow pad
-- Custom command text box — type any command and press Send or Enter
+- **Type Text** — send text to be typed via the USB HID keyboard on the connected PC
+- Custom command text box — type any raw command and press Send or Enter
 - Live log showing sent commands and replies from the device
 - Installable on Android as a home screen app (PWA)
+- `ble-debug.html` — standalone debug page for testing BLE connectivity and commands
 
 ### Requirements
 
@@ -119,6 +122,7 @@ marsicolab.ddns.net {
 app/
 ├── index.html           # UI (buttons, inputs, log)
 ├── app.js               # Web Bluetooth + command logic
+├── ble-debug.html       # Standalone BLE debug/test page
 ├── manifest.json        # PWA manifest
 ├── service-worker.js    # Offline caching
 ├── Dockerfile           # nginx:alpine container
@@ -130,7 +134,7 @@ device/
 ├── firmware/            # Bootloader updater + CircuitPython 10.1.3 (.uf2)
 └── lib/
     ├── adafruit_ble/          # BLE + Nordic UART service
-    ├── adafruit_hid/          # USB HID (mouse)
+    ├── adafruit_hid/          # USB HID (mouse + keyboard)
     ├── adafruit_debouncer.mpy # Button debouncing
     └── adafruit_ticks.mpy     # Timing utility
 ```
