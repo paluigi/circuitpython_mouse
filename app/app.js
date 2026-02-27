@@ -96,15 +96,13 @@ async function connect() {
     addLog('— GATT connected, waiting…', '#888');
     await new Promise(r => setTimeout(r, 1000));
     addLog('— getting service…', '#888');
-    // Use getPrimaryServices() + manual find to work around a Chrome bug
-    // where getPrimaryService(uuid) fails even when the service is present
-    const allServices = await server.getPrimaryServices();
-    addLog('— found ' + allServices.length + ' service(s)', '#888');
-    const service = allServices.find(s => s.uuid.toLowerCase() === NUS_SERVICE_UUID.toLowerCase());
-    if (!service) {
-      allServices.forEach(s => addLog('  svc: ' + s.uuid, '#facc15'));
+    // getPrimaryServices(uuid) scopes discovery to just the NUS service,
+    // avoiding the hang that occurs when listing all services on Android Chrome
+    const matched = await server.getPrimaryServices(NUS_SERVICE_UUID);
+    if (!matched || matched.length === 0) {
       throw new Error('NUS UART service not found on device');
     }
+    const service = matched[0];
     addLog('— service found, getting RX characteristic…', '#888');
     rxCharacteristic = await service.getCharacteristic(NUS_RX_UUID);
     addLog('— RX ready', '#888');
