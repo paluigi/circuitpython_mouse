@@ -69,7 +69,7 @@ async function connect() {
   setConnecting();
   try {
     bleDevice = await navigator.bluetooth.requestDevice({
-      filters: [{ services: [NUS_SERVICE_UUID] }],
+      acceptAllDevices: true,
       optionalServices: [NUS_SERVICE_UUID]
     });
 
