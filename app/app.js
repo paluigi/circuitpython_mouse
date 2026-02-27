@@ -79,17 +79,26 @@ async function connect() {
       addLog('— disconnected', '#facc15');
     });
 
-    const server  = await bleDevice.gatt.connect();
+    addLog('— GATT connecting…', '#888');
+    const server = await bleDevice.gatt.connect();
+    addLog('— GATT connected, getting service…', '#888');
     const service = await server.getPrimaryService(NUS_SERVICE_UUID);
+    addLog('— service found, getting RX characteristic…', '#888');
     rxCharacteristic = await service.getCharacteristic(NUS_RX_UUID);
+    addLog('— RX ready', '#888');
 
-    // Subscribe to TX notifications (device → app)
-    const txChar = await service.getCharacteristic(NUS_TX_UUID);
-    await txChar.startNotifications();
-    txChar.addEventListener('characteristicvaluechanged', e => {
-      const msg = new TextDecoder().decode(e.target.value);
-      addLog('< ' + msg.trim(), '#93c5fd');
-    });
+    // Subscribe to TX notifications (device → app) — non-fatal if unavailable
+    try {
+      const txChar = await service.getCharacteristic(NUS_TX_UUID);
+      await txChar.startNotifications();
+      txChar.addEventListener('characteristicvaluechanged', e => {
+        const msg = new TextDecoder().decode(e.target.value);
+        addLog('< ' + msg.trim(), '#93c5fd');
+      });
+      addLog('— TX notifications enabled', '#888');
+    } catch (e) {
+      addLog('! TX notifications unavailable: ' + e.message, '#facc15');
+    }
 
     setConnected(true);
     btnConnect.disabled = false;
