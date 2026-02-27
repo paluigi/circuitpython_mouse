@@ -30,6 +30,18 @@ function addLog(msg, color = '#4ade80') {
   while (log.children.length > 50) log.removeChild(log.lastChild);
 }
 
+// --- Forward console errors and uncaught exceptions to the on-screen log ---
+const _origConsoleError = console.error.bind(console);
+console.error = (...args) => {
+  _origConsoleError(...args);
+  addLog('ERR: ' + args.map(a => (a instanceof Error ? a.message : String(a))).join(' '), '#f87171');
+};
+window.addEventListener('error', e => addLog('ERR: ' + e.message, '#f87171'));
+window.addEventListener('unhandledrejection', e => {
+  const msg = e.reason instanceof Error ? e.reason.message : String(e.reason);
+  addLog('ERR: ' + msg, '#f87171');
+});
+
 // --- BLE send ---
 async function sendCommand(cmd) {
   if (!rxCharacteristic) return;
