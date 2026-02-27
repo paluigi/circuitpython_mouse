@@ -101,22 +101,11 @@ async function connect() {
       new Promise((_, reject) => setTimeout(() => reject(new Error(label + ' timed out after ' + ms / 1000 + 's')), ms))
     ]);
 
-    let service;
-    try {
-      service = await withTimeout(server.getPrimaryService(NUS_SERVICE_UUID), 8000, 'getPrimaryService');
-      addLog('— service found (singular)', '#888');
-    } catch (e1) {
-      addLog('! singular failed: ' + e1.message + ' — trying plural…', '#facc15');
-      try {
-        const matched = await withTimeout(server.getPrimaryServices(NUS_SERVICE_UUID), 8000, 'getPrimaryServices');
-        if (!matched || matched.length === 0) throw new Error('NUS service not found');
-        service = matched[0];
-        addLog('— service found (plural)', '#888');
-      } catch (e2) {
-        addLog('! plural failed: ' + e2.message, '#f87171');
-        throw e2;
-      }
-    }
+    addLog('— enumerating all services…', '#888');
+    const allServices = await withTimeout(server.getPrimaryServices(), 10000, 'getPrimaryServices');
+    addLog('— found ' + allServices.length + ' service(s): ' + allServices.map(s => s.uuid).join(', '), '#888');
+    const service = allServices.find(s => s.uuid === NUS_SERVICE_UUID);
+    if (!service) throw new Error('NUS service not found. Services: ' + allServices.map(s => s.uuid).join(', '));
     addLog('— service found, getting RX characteristic…', '#888');
     rxCharacteristic = await service.getCharacteristic(NUS_RX_UUID);
     addLog('— RX ready', '#888');
