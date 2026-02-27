@@ -90,12 +90,12 @@ The app is packaged as a Docker container served by nginx. It listens on HTTP po
 docker compose -f app/docker-compose.yml up -d --build
 ```
 
-The app is then available at `http://<server-ip>:8080`. Point your reverse proxy to that address and expose it over HTTPS.
+The app is then available at `http://<server-ip>:9090`. Point your reverse proxy to that address and expose it over HTTPS.
 
 **Reverse proxy example (nginx):**
 ```nginx
 location / {
-    proxy_pass http://localhost:8080;
+    proxy_pass http://localhost:9090;
 }
 ```
 
@@ -117,7 +117,7 @@ app/
 ├── service-worker.js    # Offline caching
 ├── Dockerfile           # nginx:alpine container
 ├── nginx.conf           # nginx config (gzip, caching, SPA fallback)
-└── docker-compose.yml   # Compose file (port 8080)
+└── docker-compose.yml   # Compose file (port 9090)
 
 device/
 ├── code.py              # Main CircuitPython script
