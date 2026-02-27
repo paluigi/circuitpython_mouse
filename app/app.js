@@ -101,6 +101,16 @@ async function connect() {
       service = await server.getPrimaryService(NUS_SERVICE_UUID);
     } catch (e) {
       addLog('! getPrimaryService failed: ' + e.message, '#f87171');
+      try {
+        const all = await server.getPrimaryServices();
+        if (all.length === 0) {
+          addLog('! Device has no GATT services', '#f87171');
+        } else {
+          all.forEach(s => addLog('  svc: ' + s.uuid, '#facc15'));
+        }
+      } catch (e2) {
+        addLog('! Cannot list services: ' + e2.message, '#f87171');
+      }
       throw e;
     }
     addLog('— service found, getting RX characteristic…', '#888');
