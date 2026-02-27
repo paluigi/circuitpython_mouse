@@ -93,7 +93,8 @@ while True:
             raw = uart_service.readline()
             if raw:
                 cmd = raw.decode("utf-8").strip()
-                print("cmd:", cmd)
+                print("raw bytes:", raw)
+                print("cmd:", repr(cmd))
                 handle_command(cmd)
     elif ble_was_connected:
         print("BLE disconnected, re-advertising...")
