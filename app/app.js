@@ -81,8 +81,7 @@ async function connect() {
   setConnecting();
   try {
     bleDevice = await navigator.bluetooth.requestDevice({
-      filters: [{ name: 'CIRCUITPY0a24' }],
-      optionalServices: [NUS_SERVICE_UUID]
+      filters: [{ services: [NUS_SERVICE_UUID] }],
     });
 
     bleDevice.addEventListener('gattserverdisconnected', () => {
