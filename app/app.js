@@ -93,8 +93,16 @@ async function connect() {
 
     addLog('— GATT connecting…', '#888');
     const server = await bleDevice.gatt.connect();
-    addLog('— GATT connected, getting service…', '#888');
-    const service = await server.getPrimaryService(NUS_SERVICE_UUID);
+    addLog('— GATT connected, waiting…', '#888');
+    await new Promise(r => setTimeout(r, 1000));
+    addLog('— getting service…', '#888');
+    let service;
+    try {
+      service = await server.getPrimaryService(NUS_SERVICE_UUID);
+    } catch (e) {
+      addLog('! getPrimaryService failed: ' + e.message, '#f87171');
+      throw e;
+    }
     addLog('— service found, getting RX characteristic…', '#888');
     rxCharacteristic = await service.getCharacteristic(NUS_RX_UUID);
     addLog('— RX ready', '#888');
