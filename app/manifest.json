@@ -2,7 +2,7 @@
   "name": "BLE Mouse Controller",
   "short_name": "BLE Mouse",
   "description": "Control a CircuitPython BLE mouse device",
-  "start_url": "/",
+  "start_url": "/mouse/",
   "display": "standalone",
   "background_color": "#1a1a2e",
   "theme_color": "#1a1a2e",

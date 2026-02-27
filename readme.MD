@@ -92,12 +92,18 @@ docker compose -f app/docker-compose.yml up -d --build
 
 The app is then available at `http://<server-ip>:9090`. Point your reverse proxy to that address and expose it over HTTPS.
 
-**Reverse proxy example (nginx):**
-```nginx
-location / {
-    proxy_pass http://localhost:9090;
+**Reverse proxy example (Caddy, with another service on the same domain):**
+```
+marsicolab.ddns.net {
+    handle_path /mouse* {
+        reverse_proxy localhost:9090
+    }
+    handle {
+        reverse_proxy localhost:4443
+    }
 }
 ```
+`handle_path` strips the `/mouse` prefix before forwarding to the container, so nginx sees a normal `/` request. The `handle` block catches everything else and forwards it to your existing service.
 
 ### Installing on Android
 
