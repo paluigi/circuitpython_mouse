@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>BLE Debug</title>
+<style>
+body { font-family: monospace; background:#111; color:#0f0; padding:20px; }
+button { font-size:18px; padding:10px; margin-bottom:20px; }
+#log { white-space: pre-wrap; border:1px solid #0f0; padding:10px; height:400px; overflow:auto; }
+.error { color:#f55; }
+</style>
+</head>
+<body>
+
+<h2>BLE Debug Console</h2>
+<button onclick="connect()">Connect BLE Device</button>
+<div id="log"></div>
+
+<script>
+const logDiv = document.getElementById("log");
+
+function log(msg, isError = false) {
+    const line = document.createElement("div");
+    line.textContent = "> " + msg;
+    if (isError) line.classList.add("error");
+    logDiv.appendChild(line);
+    logDiv.scrollTop = logDiv.scrollHeight;
+    console.log(msg);
+}
+
+async function connect() {
+    try {
+        log("Requesting device...");
+
+        const device = await navigator.bluetooth.requestDevice({
+            acceptAllDevices: true,
+            optionalServices: [
+                'battery_service',
+                'device_information',
+                '6e400001-b5a3-f393-e0a9-e50e24dcca9e'
+            ]
+        });
+
+        log("Device selected: " + device.name);
+
+        device.addEventListener('gattserverdisconnected', () => {
+            log("⚠️ Device disconnected", true);
+        });
+
+        log("Connecting to GATT...");
+        const server = await device.gatt.connect();
+        log("Connected to GATT server");
+
+        log("Discovering primary services...");
+        const services = await server.getPrimaryServices();
+
+        log("Found " + services.length + " services:");
+
+        for (const service of services) {
+            log(" - " + service.uuid);
+        }
+
+        log("DONE");
+
+    } catch (error) {
+        log("ERROR: " + error.message, true);
+    }
+}
+</script>
+
+</body>
+</html>
