@@ -14,10 +14,13 @@ button { font-size:18px; padding:10px; margin-bottom:20px; }
 
 <h2>BLE Debug Console</h2>
 <button onclick="connect()">Connect BLE Device</button>
+<button id="btn-toggle" onclick="sendCmd('TOGGLE')" disabled>Start / Stop</button>
 <div id="log"></div>
 
 <script>
+const NUS_RX_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
 const logDiv = document.getElementById("log");
+let rxChar = null;
 
 function log(msg, isError = false) {
     const line = document.createElement("div");
@@ -26,6 +29,16 @@ function log(msg, isError = false) {
     logDiv.appendChild(line);
     logDiv.scrollTop = logDiv.scrollHeight;
     console.log(msg);
+}
+
+async function sendCmd(cmd) {
+    if (!rxChar) return;
+    try {
+        await rxChar.writeValue(new TextEncoder().encode(cmd + '\n'));
+        log("sent: " + cmd);
+    } catch (e) {
+        log("ERROR sending: " + e.message, true);
+    }
 }
 
 async function connect() {
@@ -45,6 +58,8 @@ async function connect() {
 
         device.addEventListener('gattserverdisconnected', () => {
             log("⚠️ Device disconnected", true);
+            rxChar = null;
+            document.getElementById('btn-toggle').disabled = true;
         });
 
         log("Connecting to GATT...");
@@ -53,14 +68,19 @@ async function connect() {
 
         log("Discovering primary services...");
         const services = await server.getPrimaryServices();
-
         log("Found " + services.length + " services:");
-
         for (const service of services) {
             log(" - " + service.uuid);
         }
 
-        log("DONE");
+        const nusSvc = services.find(s => s.uuid === '6e400001-b5a3-f393-e0a9-e50e24dcca9e');
+        if (nusSvc) {
+            rxChar = await nusSvc.getCharacteristic(NUS_RX_UUID);
+            log("RX characteristic ready");
+            document.getElementById('btn-toggle').disabled = false;
+        } else {
+            log("NUS service not found", true);
+        }
 
     } catch (error) {
         log("ERROR: " + error.message, true);
