@@ -92,7 +92,7 @@ while True:
         if uart_service.in_waiting:
             raw = uart_service.readline()
             if raw:
-                cmd = raw.decode("utf-8", "ignore").strip()
+                cmd = raw.decode("utf-8").strip()
                 print("cmd:", cmd)
                 handle_command(cmd)
     elif ble_was_connected:
