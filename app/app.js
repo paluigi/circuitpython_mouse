@@ -81,7 +81,8 @@ async function connect() {
   setConnecting();
   try {
     bleDevice = await navigator.bluetooth.requestDevice({
-      filters: [{ services: [NUS_SERVICE_UUID] }],
+      filters: [{ name: 'CIRCUITPY0a24' }],
+      optionalServices: [NUS_SERVICE_UUID],
     });
 
     bleDevice.addEventListener('gattserverdisconnected', () => {
@@ -93,19 +94,26 @@ async function connect() {
     addLog('— GATT connecting…', '#888');
     const server = await bleDevice.gatt.connect();
     addLog('— GATT connected, waiting…', '#888');
-    await new Promise(r => setTimeout(r, 2000));
-    addLog('— getting service…', '#888');
+    await new Promise(r => setTimeout(r, 3000));
 
     const withTimeout = (promise, ms, label) => Promise.race([
       promise,
       new Promise((_, reject) => setTimeout(() => reject(new Error(label + ' timed out after ' + ms / 1000 + 's')), ms))
     ]);
 
-    addLog('— enumerating all services…', '#888');
-    const allServices = await withTimeout(server.getPrimaryServices(), 10000, 'getPrimaryServices');
-    addLog('— found ' + allServices.length + ' service(s): ' + allServices.map(s => s.uuid).join(', '), '#888');
-    const service = allServices.find(s => s.uuid === NUS_SERVICE_UUID);
-    if (!service) throw new Error('NUS service not found. Services: ' + allServices.map(s => s.uuid).join(', '));
+    addLog('— getting service…', '#888');
+    let service = null;
+    for (let attempt = 1; attempt <= 5; attempt++) {
+      try {
+        service = await withTimeout(server.getPrimaryService(NUS_SERVICE_UUID), 8000, 'attempt ' + attempt);
+        addLog('— service found (attempt ' + attempt + ')', '#888');
+        break;
+      } catch (e) {
+        addLog('! attempt ' + attempt + ' failed: ' + e.message, '#facc15');
+        if (attempt < 5) await new Promise(r => setTimeout(r, 2000));
+      }
+    }
+    if (!service) throw new Error('NUS service not found after 5 attempts');
     addLog('— service found, getting RX characteristic…', '#888');
     rxCharacteristic = await service.getCharacteristic(NUS_RX_UUID);
     addLog('— RX ready', '#888');
