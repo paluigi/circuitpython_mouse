@@ -2,6 +2,8 @@ import time
 import board
 import digitalio
 import usb_hid
+import binascii
+import aesio
 from adafruit_hid.mouse import Mouse
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.keyboard_layout_us import KeyboardLayoutUS
@@ -13,6 +15,19 @@ from adafruit_ble.services.nordic import UARTService
 # Wait at the beginning
 print("booting...")
 time.sleep(10)
+
+# Load AES key from secret.txt (place the file on the device's USB drive)
+def _make_key(password):
+    b = password.encode("utf-8")
+    return bytes((list(b) + [0] * 16)[:16])
+
+try:
+    with open("secret.txt", "r") as f:
+        cipher_key = _make_key(f.read().strip())
+    print("cipher key loaded")
+except OSError:
+    cipher_key = None
+    print("secret.txt not found, CIPHER disabled")
 
 # Setup mouse
 print("setting up mouse...")
@@ -44,6 +59,16 @@ ble_was_connected = False
 status = True
 direction = 0
 last_movement = time.monotonic()
+
+
+def _decrypt_cipher(b64_payload):
+    # Payload = base64(16-byte IV + AES-CTR ciphertext)
+    data = binascii.a2b_base64(b64_payload)
+    iv = bytearray(data[:16])
+    ct = bytearray(data[16:])
+    pt = bytearray(len(ct))
+    aesio.AES(cipher_key, aesio.MODE_CTR, iv).decrypt_into(ct, pt)
+    return pt.decode("utf-8")
 
 
 def handle_command(cmd):
@@ -86,6 +111,14 @@ def handle_command(cmd):
             layout.write(cmd[5:])
         except ValueError:
             pass
+    elif verb == "CIPHER" and len(parts) >= 2:
+        if cipher_key:
+            try:
+                layout.write(_decrypt_cipher(parts[1]))
+            except Exception as e:
+                print("CIPHER error:", e)
+        else:
+            print("CIPHER: no key loaded (secret.txt missing)")
 
 
 while True:

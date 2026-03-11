@@ -17,7 +17,7 @@ const btnCustom     = document.getElementById('btn-custom');
 const customInput   = document.getElementById('custom-cmd');
 
 // All buttons that require a BLE connection
-const cmdButtons = document.querySelectorAll('[data-cmd], [data-move], #btn-move, #btn-scroll-up, #btn-scroll-down, #btn-custom, #btn-type');
+const cmdButtons = document.querySelectorAll('[data-cmd], [data-move], #btn-move, #btn-scroll-up, #btn-scroll-down, #btn-custom, #btn-type, #btn-cipher');
 
 // --- Logging ---
 function addLog(msg, color = '#4ade80') {
@@ -191,4 +191,100 @@ btnType.addEventListener('click', () => {
 });
 typeInput.addEventListener('keydown', e => {
   if (e.key === 'Enter') btnType.click();
+});
+
+// --- Tab switching ---
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.remove('hidden');
+  });
+});
+
+// --- Cipher: pre-shared password via localStorage ---
+const CIPHER_STORAGE_KEY = 'cipherPassword';
+
+function getCipherPassword() {
+  return localStorage.getItem(CIPHER_STORAGE_KEY) ?? 'changeme';
+}
+
+// Derive a 16-byte AES key from the password (mirrors device/_make_key)
+async function _importCipherKey() {
+  const pwdBytes = new TextEncoder().encode(getCipherPassword());
+  const keyBytes = new Uint8Array(16);
+  keyBytes.set(pwdBytes.subarray(0, 16));
+  return crypto.subtle.importKey('raw', keyBytes, { name: 'AES-CTR' }, false, ['encrypt']);
+}
+
+async function encryptCipher(plaintext) {
+  const key = await _importCipherKey();
+  const iv  = crypto.getRandomValues(new Uint8Array(16));
+  const ct  = await crypto.subtle.encrypt(
+    { name: 'AES-CTR', counter: iv, length: 64 },
+    key,
+    new TextEncoder().encode(plaintext)
+  );
+  // payload = IV (16 bytes) || ciphertext  →  base64
+  const payload = new Uint8Array(16 + ct.byteLength);
+  payload.set(iv, 0);
+  payload.set(new Uint8Array(ct), 16);
+  return btoa(String.fromCharCode(...payload));
+}
+
+// --- Eye toggle for cipher input ---
+const cipherInput = document.getElementById('cipher-text');
+const btnEye      = document.getElementById('btn-eye-cipher');
+
+const SVG_EYE_OPEN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const SVG_EYE_OFF  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+
+// --- Key settings: pre-fill, eye toggle, save ---
+const keyInput    = document.getElementById('cipher-key');
+const btnEyeKey   = document.getElementById('btn-eye-key');
+const btnSaveKey  = document.getElementById('btn-save-key');
+const keySavedMsg = document.getElementById('key-saved-msg');
+
+keyInput.value = getCipherPassword();
+
+btnEyeKey.innerHTML = SVG_EYE_OPEN;
+btnEyeKey.addEventListener('click', () => {
+  const visible   = keyInput.type === 'text';
+  keyInput.type   = visible ? 'password' : 'text';
+  btnEyeKey.innerHTML = visible ? SVG_EYE_OPEN : SVG_EYE_OFF;
+});
+
+btnSaveKey.addEventListener('click', () => {
+  const pwd = keyInput.value.trim();
+  if (!pwd) return;
+  localStorage.setItem(CIPHER_STORAGE_KEY, pwd);
+  keySavedMsg.style.visibility = 'visible';
+  setTimeout(() => { keySavedMsg.style.visibility = 'hidden'; }, 2000);
+});
+
+// --- Eye toggle for cipher text input ---
+btnEye.innerHTML = SVG_EYE_OPEN;
+btnEye.addEventListener('click', () => {
+  const visible = cipherInput.type === 'text';
+  cipherInput.type    = visible ? 'password' : 'text';
+  btnEye.innerHTML    = visible ? SVG_EYE_OPEN : SVG_EYE_OFF;
+});
+
+// --- Cipher send ---
+const btnCipher = document.getElementById('btn-cipher');
+btnCipher.addEventListener('click', async () => {
+  if (!rxCharacteristic || !cipherInput.value) return;
+  try {
+    const b64  = await encryptCipher(cipherInput.value);
+    const line = 'CIPHER ' + b64 + '\n';          // preserve base64 case — do NOT uppercase
+    await rxCharacteristic.writeValue(new TextEncoder().encode(line));
+    addLog('> CIPHER [encrypted]');
+    cipherInput.value = '';
+  } catch (e) {
+    addLog('! ' + e.message, '#f87171');
+  }
+});
+cipherInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') btnCipher.click();
 });

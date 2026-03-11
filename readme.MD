@@ -27,6 +27,7 @@ Copy the following onto the `CIRCUITPY` drive:
 
 - `device/code.py` → `CIRCUITPY/code.py`
 - `device/lib/` → `CIRCUITPY/lib/`
+- `device/secret.txt` → `CIRCUITPY/secret.txt` *(required for the CIPHER command — edit it first)*
 
 The code runs automatically on boot.
 
@@ -59,8 +60,29 @@ Send the following text commands (terminated with a newline):
 | `CLICK MIDDLE`  | Middle click                                                |
 | `SCROLL n`      | Scroll by n steps (positive=up, negative=down)              |
 | `TYPE text`     | Type text via USB HID keyboard (printable ASCII only, e.g. `TYPE Hello World`) |
+| `CIPHER <b64>`  | Decrypt an AES-128-CTR payload and type the result (see [Cipher](#cipher)) |
 
 The board re-advertises automatically after a disconnect.
+
+---
+
+## Cipher
+
+The `CIPHER` command lets the web app send sensitive text (e.g. passwords) over BLE without transmitting it in plaintext.
+
+### How it works
+
+- **Encryption:** AES-128-CTR. A fresh random 16-byte IV is generated for every message.
+- **Payload format:** `CIPHER <base64(IV + ciphertext)>`
+- **Key derivation:** the pre-shared password is UTF-8-encoded and zero-padded/truncated to 16 bytes. Both the device and the app use the same derivation.
+
+### Setup
+
+1. Choose a strong password and write it as the only line in `device/secret.txt`.
+2. Copy `secret.txt` to `CIRCUITPY/secret.txt`.
+3. Open the **Cipher** tab in the web app, enter the same password in the **Pre-shared Key** field, and click **Save** — it is stored in the browser's `localStorage` and persists across sessions.
+
+> **Security note:** AES-128-CTR with a random IV protects against passive BLE sniffing. The password itself is stored in plaintext on the device (`secret.txt`) and in `localStorage` in the browser, so physical access to either device defeats the protection.
 
 ---
 
@@ -74,6 +96,7 @@ A Progressive Web App (PWA) is included in `app/` to control the device from And
 - Buttons for all commands: Start, Stop, Toggle, Click (L/M/R), Scroll
 - Move controls: X/Y number inputs and an arrow pad
 - **Type Text** — send text to be typed via the USB HID keyboard on the connected PC
+- **Cipher Text** — encrypt and send sensitive text using AES-128-CTR; the device decrypts and types it
 - Custom command text box — type any raw command and press Send or Enter
 - Live log showing sent commands and replies from the device
 - Installable on Android as a home screen app (PWA)
@@ -131,6 +154,7 @@ app/
 
 device/
 ├── code.py              # Main CircuitPython script
+├── secret.txt           # Pre-shared password for CIPHER command (copy to CIRCUITPY/)
 ├── firmware/            # Bootloader updater + CircuitPython 10.1.3 (.uf2)
 └── lib/
     ├── adafruit_ble/          # BLE + Nordic UART service
