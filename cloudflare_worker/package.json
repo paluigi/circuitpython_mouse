@@ -1,0 +1,13 @@
+{
+  "name": "password-deriver",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "secret": "wrangler secret put MASTER_PASSPHRASE"
+  },
+  "devDependencies": {
+    "wrangler": "^4.73.0"
+  }
+}

@@ -1,0 +1,6 @@
+name = "password-deriver"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+# MASTER_PASSPHRASE is a secret — never put it here.
+# Set it once via:  wrangler secret put MASTER_PASSPHRASE
