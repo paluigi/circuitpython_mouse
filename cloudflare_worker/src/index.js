@@ -26,6 +26,11 @@ const enc = new TextEncoder();
 
 export default {
   async fetch(request, env) {
+    // ── CORS preflight ─────────────────────────────────────────────────────
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: corsHeaders() });
+    }
+
     // ── validate inputs ────────────────────────────────────────────────────
     const { searchParams } = new URL(request.url);
     const rawContext = searchParams.get("context");
@@ -87,9 +92,17 @@ export default {
   },
 };
 
+function corsHeaders() {
+  return {
+    "Access-Control-Allow-Origin":  "*",
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+  };
+}
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...corsHeaders() },
   });
 }
