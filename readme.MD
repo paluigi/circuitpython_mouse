@@ -139,6 +139,70 @@ marsicolab.ddns.net {
 
 ---
 
+## Cloudflare Worker — Password Deriver
+
+A companion Cloudflare Worker (`cloudflare_worker/`) that derives deterministic two-word passwords from a master passphrase using PBKDF2, without ever exposing the master passphrase to the caller.
+
+### How it works
+
+Given a **context** (e.g. `gmail.com`) and a **version** (e.g. `1`), the worker:
+
+1. Normalises inputs: context → trim + lowercase; version → trim.
+2. Constructs a salt: `pw:{context}:v{version}`.
+3. Runs **PBKDF2-HMAC-SHA256** (100,000 iterations, 32-byte output) keyed on the master passphrase.
+4. Converts the 32 output bytes to a 256-bit binary string.
+5. Extracts the first two 11-bit groups (bits 0–10 and 11–21) as BIP39 indices (range 0–2047).
+6. Returns the two corresponding **BIP39 English words** as a JSON response.
+
+The algorithm is deterministic — the same context + version always yields the same word pair — and matches a PowerShell reference implementation.
+
+### API
+
+```
+GET https://<worker-url>/?context=<site>&version=<n>
+```
+
+| Parameter | Description                          | Example      |
+|-----------|--------------------------------------|--------------|
+| `context` | Site or service identifier           | `gmail.com`  |
+| `version` | Password version (increment to rotate) | `1`        |
+
+**Response (200 OK):**
+```json
+{
+  "salt":       "pw:gmail.com:v1",
+  "word1Index": 1234,
+  "word1":      "some",
+  "word2Index": 567,
+  "word2":      "word"
+}
+```
+
+### Setup
+
+The worker requires one secret — the master passphrase — stored as a Cloudflare secret (never in `wrangler.toml` or source code):
+
+```bash
+wrangler secret put MASTER_PASSPHRASE
+```
+
+### Deploying
+
+```bash
+cd cloudflare_worker
+npm install
+npx wrangler deploy
+```
+
+### Local development
+
+```bash
+cd cloudflare_worker
+npx wrangler dev
+```
+
+---
+
 ## Project Structure
 
 ```
@@ -151,6 +215,13 @@ app/
 ├── Dockerfile           # nginx:alpine container
 ├── nginx.conf           # nginx config (gzip, caching, SPA fallback)
 └── docker-compose.yml   # Compose file (port 9090)
+
+cloudflare_worker/
+├── src/
+│   ├── index.js         # Worker entry point (PBKDF2 derivation + BIP39 mapping)
+│   └── bip39.js         # BIP39 English wordlist (2048 words)
+├── wrangler.toml        # Worker name and compatibility settings
+└── package.json         # Dev dependencies (wrangler)
 
 device/
 ├── code.py              # Main CircuitPython script

@@ -271,6 +271,43 @@ btnEye.addEventListener('click', () => {
   btnEye.innerHTML    = visible ? SVG_EYE_OPEN : SVG_EYE_OFF;
 });
 
+// --- Password Deriver ---
+const DERIVER_URL_KEY  = 'deriverWorkerUrl';
+const deriverUrlInput  = document.getElementById('deriver-url');
+const deriverInput     = document.getElementById('deriver-input');
+const btnDerive        = document.getElementById('btn-derive');
+const deriverMsg       = document.getElementById('deriver-msg');
+
+deriverUrlInput.value = localStorage.getItem(DERIVER_URL_KEY) ?? '';
+deriverUrlInput.addEventListener('change', () => {
+  localStorage.setItem(DERIVER_URL_KEY, deriverUrlInput.value.trim());
+});
+
+btnDerive.addEventListener('click', async () => {
+  const workerUrl = deriverUrlInput.value.trim();
+  if (!workerUrl) { addLog('! Set the Worker URL first', '#f87171'); return; }
+  const parts = deriverInput.value.trim().split(/\s+/);
+  if (parts.length < 2) { addLog('! Enter context and version separated by a space', '#f87171'); return; }
+  const [context, version] = parts;
+  try {
+    const url = new URL(workerUrl);
+    url.searchParams.set('context', context);
+    url.searchParams.set('version', version);
+    const res = await fetch(url.toString());
+    if (!res.ok) { addLog('! Worker error: ' + res.status, '#f87171'); return; }
+    const data = await res.json();
+    deriverInput.value = data.word1 + ' ' + data.word2;
+    deriverMsg.style.visibility = 'visible';
+    setTimeout(() => { deriverMsg.style.visibility = 'hidden'; }, 2000);
+    addLog('> derived: ' + data.word1 + ' ' + data.word2);
+  } catch (e) {
+    addLog('! ' + e.message, '#f87171');
+  }
+});
+deriverInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') btnDerive.click();
+});
+
 // --- Cipher send ---
 const btnCipher = document.getElementById('btn-cipher');
 btnCipher.addEventListener('click', async () => {

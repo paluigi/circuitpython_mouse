@@ -312,6 +312,21 @@
       </p>
     </div>
 
+    <!-- Password Deriver -->
+    <div class="card">
+      <h2>Password Deriver</h2>
+      <label class="field-label" for="deriver-url">Worker URL</label>
+      <div class="input-row" style="margin-bottom:0.75rem;">
+        <input type="text" id="deriver-url" placeholder="https://password-deriver.<account>.workers.dev" autocomplete="off" />
+      </div>
+      <label class="field-label" for="deriver-input">Context and version (e.g. <code style="color:#93c5fd">gmail.com 1</code>)</label>
+      <div class="input-row">
+        <input type="text" id="deriver-input" placeholder="gmail.com 1" autocomplete="off" />
+        <button class="btn-send" id="btn-derive">Derive</button>
+      </div>
+      <p id="deriver-msg" style="font-size:0.75rem;color:#4ade80;margin-top:0.5rem;visibility:hidden;">Done.</p>
+    </div>
+
     <!-- Send cipher text -->
     <div class="card">
       <h2>Cipher Text</h2>
