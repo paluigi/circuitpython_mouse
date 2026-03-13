@@ -5,6 +5,29 @@ const NUS_TX_UUID      = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'; // notify (devi
 
 let rxCharacteristic = null;
 
+// --- PWA install prompt ---
+let installPrompt = null;
+const btnInstall = document.getElementById('btn-install');
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  installPrompt = e;
+  btnInstall.hidden = false;
+});
+
+btnInstall.addEventListener('click', async () => {
+  if (!installPrompt) return;
+  installPrompt.prompt();
+  const { outcome } = await installPrompt.userChoice;
+  if (outcome === 'accepted') btnInstall.hidden = true;
+  installPrompt = null;
+});
+
+window.addEventListener('appinstalled', () => {
+  btnInstall.hidden = true;
+  installPrompt = null;
+});
+
 // --- UI refs ---
 const btnConnect    = document.getElementById('btn-connect');
 const statusDot     = document.getElementById('status-dot');

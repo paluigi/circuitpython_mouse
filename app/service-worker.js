@@ -1,4 +1,4 @@
-const CACHE = 'ble-mouse-v5';
+const CACHE = 'ble-mouse-v6';
 
 // Derive base path from the SW location so it works under any subpath
 // e.g. if served at /mouse/, BASE = '/mouse/'
@@ -9,6 +9,8 @@ const ASSETS = [
   BASE + 'index.html',
   BASE + 'app.js',
   BASE + 'manifest.json',
+  BASE + 'icon-192.png',
+  BASE + 'icon-512.png',
 ];
 
 self.addEventListener('install', e => {
