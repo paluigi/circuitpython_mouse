@@ -40,7 +40,7 @@ const btnCustom     = document.getElementById('btn-custom');
 const customInput   = document.getElementById('custom-cmd');
 
 // All buttons that require a BLE connection
-const cmdButtons = document.querySelectorAll('[data-cmd], [data-move], #btn-move, #btn-scroll-up, #btn-scroll-down, #btn-custom, #btn-type, #btn-cipher');
+const cmdButtons = document.querySelectorAll('[data-cmd], [data-move], #btn-move, #btn-scroll-up, #btn-scroll-down, #btn-custom, #btn-type, #btn-enter, #btn-cipher');
 
 // --- Logging ---
 function addLog(msg, color = '#4ade80') {
@@ -207,11 +207,13 @@ customInput.addEventListener('keydown', e => {
 
 // --- Type text ---
 const btnType    = document.getElementById('btn-type');
+const btnEnter   = document.getElementById('btn-enter');
 const typeInput  = document.getElementById('type-text');
 btnType.addEventListener('click', () => {
   const text = typeInput.value;
   if (text) { sendCommand('TYPE ' + text); typeInput.value = ''; }
 });
+btnEnter.addEventListener('click', () => sendCommand('KEY ENTER'));
 typeInput.addEventListener('keydown', e => {
   if (e.key === 'Enter') btnType.click();
 });

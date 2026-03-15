@@ -7,6 +7,7 @@ import aesio
 from adafruit_hid.mouse import Mouse
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.keyboard_layout_us import KeyboardLayoutUS
+from adafruit_hid.keycode import Keycode
 from adafruit_debouncer import Debouncer
 import adafruit_ble
 from adafruit_ble.advertising.standard import ProvideServicesAdvertisement
@@ -111,6 +112,12 @@ def handle_command(cmd):
             layout.write(cmd[5:])
         except ValueError:
             pass
+    elif verb == "KEY" and len(parts) >= 2:
+        key_name = parts[1].upper()
+        key = getattr(Keycode, key_name, None)
+        if key is not None:
+            kbd.press(key)
+            kbd.release_all()
     elif verb == "CIPHER" and len(parts) >= 2:
         if cipher_key:
             try:
@@ -147,19 +154,19 @@ while True:
     if status:
         led.value = False
         if (now - last_movement > 2) and direction == 0:
-            m.move(80, 0, 0)
+            m.move(2, 0, 0)
             direction += 1
             last_movement = time.monotonic()
         if (now - last_movement > 4) and direction == 1:
-            m.move(0, 80, 0)
+            m.move(0, 2, 0)
             direction += 1
             last_movement = time.monotonic()
         if (now - last_movement > 6) and direction == 2:
-            m.move(-80, 0, 0)
+            m.move(-2, 0, 0)
             direction += 1
             last_movement = time.monotonic()
         if (now - last_movement > 8) and direction == 3:
-            m.move(0, -80, 0)
+            m.move(0, -2, 0)
             direction = 0
             last_movement = time.monotonic()
     else:
