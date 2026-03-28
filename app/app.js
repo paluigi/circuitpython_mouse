@@ -265,11 +265,11 @@ const btnEye      = document.getElementById('btn-eye-cipher');
 const SVG_EYE_OPEN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
 const SVG_EYE_OFF  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
 
-// --- Key settings: pre-fill, eye toggle, save ---
-const keyInput    = document.getElementById('cipher-key');
-const btnEyeKey   = document.getElementById('btn-eye-key');
-const btnSaveKey  = document.getElementById('btn-save-key');
-const keySavedMsg = document.getElementById('key-saved-msg');
+// --- Settings: pre-shared key + worker URL ---
+const keyInput          = document.getElementById('cipher-key');
+const btnEyeKey         = document.getElementById('btn-eye-key');
+const btnSaveSettings   = document.getElementById('btn-save-settings');
+const settingsSavedMsg  = document.getElementById('settings-saved-msg');
 
 keyInput.value = getCipherPassword();
 
@@ -280,12 +280,12 @@ btnEyeKey.addEventListener('click', () => {
   btnEyeKey.innerHTML = visible ? SVG_EYE_OPEN : SVG_EYE_OFF;
 });
 
-btnSaveKey.addEventListener('click', () => {
+btnSaveSettings.addEventListener('click', () => {
   const pwd = keyInput.value.trim();
-  if (!pwd) return;
-  localStorage.setItem(CIPHER_STORAGE_KEY, pwd);
-  keySavedMsg.style.visibility = 'visible';
-  setTimeout(() => { keySavedMsg.style.visibility = 'hidden'; }, 2000);
+  if (pwd) localStorage.setItem(CIPHER_STORAGE_KEY, pwd);
+  localStorage.setItem(DERIVER_URL_KEY, deriverUrlInput.value.trim());
+  settingsSavedMsg.style.visibility = 'visible';
+  setTimeout(() => { settingsSavedMsg.style.visibility = 'hidden'; }, 2000);
 });
 
 // --- Eye toggle for cipher text input ---
@@ -304,9 +304,6 @@ const btnDerive        = document.getElementById('btn-derive');
 const deriverMsg       = document.getElementById('deriver-msg');
 
 deriverUrlInput.value = localStorage.getItem(DERIVER_URL_KEY) ?? '';
-deriverUrlInput.addEventListener('change', () => {
-  localStorage.setItem(DERIVER_URL_KEY, deriverUrlInput.value.trim());
-});
 
 btnDerive.addEventListener('click', async () => {
   const workerUrl = deriverUrlInput.value.trim();

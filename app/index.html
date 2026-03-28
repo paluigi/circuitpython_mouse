@@ -222,6 +222,7 @@
   <div class="tabs">
     <button class="tab-btn active" data-tab="controls">Controls</button>
     <button class="tab-btn"        data-tab="cipher">Cipher</button>
+    <button class="tab-btn"        data-tab="settings" style="margin-left:auto;" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.1rem;height:1.1rem;display:block;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
   </div>
 
   <!-- Controls panel -->
@@ -305,27 +306,9 @@
   <!-- Cipher panel -->
   <div id="panel-cipher" class="tab-panel hidden">
 
-    <!-- Pre-shared key settings -->
-    <div class="card">
-      <h2>Pre-shared Key</h2>
-      <label class="field-label" for="cipher-key">Password (must match device's secret.txt)</label>
-      <div class="input-row">
-        <input type="password" id="cipher-key" placeholder="enter shared password…" autocomplete="new-password" />
-        <button class="btn-eye" id="btn-eye-key" aria-label="Show / hide key" title="Show / hide"></button>
-        <button class="btn-send" id="btn-save-key">Save</button>
-      </div>
-      <p id="key-saved-msg" style="font-size:0.75rem;color:#4ade80;margin-top:0.5rem;visibility:hidden;">
-        Saved to browser storage.
-      </p>
-    </div>
-
     <!-- Password Deriver -->
     <div class="card">
       <h2>Password Deriver</h2>
-      <label class="field-label" for="deriver-url">Worker URL</label>
-      <div class="input-row" style="margin-bottom:0.75rem;">
-        <input type="text" id="deriver-url" placeholder="https://password-deriver.<account>.workers.dev" autocomplete="off" />
-      </div>
       <label class="field-label" for="deriver-input">Context and version (e.g. <code style="color:#93c5fd">gmail.com 1</code>)</label>
       <div class="input-row">
         <input type="text" id="deriver-input" placeholder="gmail.com 1" autocomplete="off" />
@@ -346,6 +329,31 @@
     </div>
 
   </div><!-- /panel-cipher -->
+
+  <!-- Settings panel -->
+  <div id="panel-settings" class="tab-panel hidden">
+
+    <!-- Pre-shared key -->
+    <div class="card">
+      <h2>Pre-shared Key</h2>
+      <label class="field-label" for="cipher-key">Password (must match device's secret.txt)</label>
+      <div class="input-row">
+        <input type="password" id="cipher-key" placeholder="enter shared password…" autocomplete="new-password" />
+        <button class="btn-eye" id="btn-eye-key" aria-label="Show / hide key" title="Show / hide"></button>
+      </div>
+    </div>
+
+    <!-- Worker URL -->
+    <div class="card">
+      <h2>Password Deriver</h2>
+      <label class="field-label" for="deriver-url">Worker URL</label>
+      <input type="text" id="deriver-url" placeholder="https://password-deriver.<account>.workers.dev" autocomplete="off" style="width:100%;" />
+    </div>
+
+    <button class="btn-send" id="btn-save-settings" style="width:100%;padding:0.75rem;">Save</button>
+    <p id="settings-saved-msg" style="font-size:0.75rem;color:#4ade80;text-align:center;margin-top:-0.5rem;visibility:hidden;">Saved to browser storage.</p>
+
+  </div><!-- /panel-settings -->
 
   <!-- Log (always visible) -->
   <div id="log"><span style="color:#555">— ready —</span></div>
