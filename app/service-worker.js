@@ -1,4 +1,4 @@
-const CACHE = 'ble-mouse-v6';
+const CACHE = 'ble-mouse-v7';
 
 // Derive base path from the SW location so it works under any subpath
 // e.g. if served at /mouse/, BASE = '/mouse/'
@@ -28,7 +28,14 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  // Network-first: always try server, update cache, fall back to cache when offline
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
+    fetch(e.request)
+      .then(response => {
+        const clone = response.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
+        return response;
+      })
+      .catch(() => caches.match(e.request))
   );
 });
