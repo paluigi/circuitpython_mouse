@@ -296,6 +296,21 @@ btnEye.addEventListener('click', () => {
   btnEye.innerHTML    = visible ? SVG_EYE_OPEN : SVG_EYE_OFF;
 });
 
+// --- Copy cipher text to clipboard ---
+const btnCopyCipher = document.getElementById('btn-copy-cipher');
+btnCopyCipher.addEventListener('click', async () => {
+  const text = cipherInput.value;
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    const orig = btnCopyCipher.textContent;
+    btnCopyCipher.textContent = 'Copied!';
+    setTimeout(() => { btnCopyCipher.textContent = orig; }, 1500);
+  } catch (e) {
+    addLog('! Copy failed: ' + e.message, '#f87171');
+  }
+});
+
 // --- Password Deriver ---
 const DERIVER_URL_KEY  = 'deriverWorkerUrl';
 const deriverUrlInput  = document.getElementById('deriver-url');
