@@ -318,10 +318,13 @@ btnDerive.addEventListener('click', async () => {
     const res = await fetch(url.toString());
     if (!res.ok) { addLog('! Worker error: ' + res.status, '#f87171'); return; }
     const data = await res.json();
-    deriverInput.value = data.word1 + ' ' + data.word2;
+    const salt = '';
+    const w1 = data.word1.charAt(0).toUpperCase() + data.word1.slice(1);
+    const derived = w1 + version.slice(0, 2) + data.word2 + salt + '!';
+    cipherInput.value = derived;
     deriverMsg.style.visibility = 'visible';
     setTimeout(() => { deriverMsg.style.visibility = 'hidden'; }, 2000);
-    addLog('> derived: ' + data.word1 + ' ' + data.word2);
+    addLog('> derived password set in cipher text');
   } catch (e) {
     addLog('! ' + e.message, '#f87171');
   }
