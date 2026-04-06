@@ -58,8 +58,17 @@ ble_was_connected = False
 
 # Setup Status
 status = True
-direction = 0
+move_index = 0
 last_movement = time.monotonic()
+
+# Jiggler config
+JIGGLE_INTERVAL = 2  # seconds between each move
+JIGGLE_MOVES = [
+    (2, 0, 0),
+    (0, 2, 0),
+    (-2, 0, 0),
+    (0, -2, 0),
+]
 
 
 def _decrypt_cipher(b64_payload):
@@ -73,7 +82,7 @@ def _decrypt_cipher(b64_payload):
 
 
 def handle_command(cmd):
-    global status, direction, last_movement
+    global status, move_index, last_movement
     cmd = cmd.strip()
     parts = cmd.split()
     verb = parts[0].upper() if parts else ""
@@ -81,13 +90,13 @@ def handle_command(cmd):
         return
     if verb == "TOGGLE":
         status = not status
-        direction = 0
+        move_index = 0
         last_movement = time.monotonic()
     elif verb == "START":
         status = True
     elif verb == "STOP":
         status = False
-        direction = 0
+        move_index = 0
         last_movement = time.monotonic()
     elif verb == "MOVE" and len(parts) >= 3:
         try:
@@ -151,25 +160,15 @@ while True:
         ble_was_connected = False
         ble.start_advertising(advertisement)
 
-    if status:
+    jiggling = status or not ble.connected
+    if jiggling:
         led.value = False
-        if (now - last_movement > 2) and direction == 0:
-            m.move(2, 0, 0)
-            direction += 1
-            last_movement = time.monotonic()
-        if (now - last_movement > 4) and direction == 1:
-            m.move(0, 2, 0)
-            direction += 1
-            last_movement = time.monotonic()
-        if (now - last_movement > 6) and direction == 2:
-            m.move(-2, 0, 0)
-            direction += 1
-            last_movement = time.monotonic()
-        if (now - last_movement > 8) and direction == 3:
-            m.move(0, -2, 0)
-            direction = 0
+        if now - last_movement > JIGGLE_INTERVAL:
+            dx, dy, dw = JIGGLE_MOVES[move_index]
+            m.move(dx, dy, dw)
+            move_index = (move_index + 1) % len(JIGGLE_MOVES)
             last_movement = time.monotonic()
     else:
         led.value = True
-        direction = 0
+        move_index = 0
         last_movement = time.monotonic()
