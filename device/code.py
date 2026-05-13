@@ -136,13 +136,13 @@ def handle_command(cmd):
         lang = parts[1].upper()
         if lang == "EN":
             layout = KeyboardLayoutUS(kbd)
-            print("Layout: EN")
+            return "Layout: EN"
         elif lang == "IT":
             if _HAS_IT_LAYOUT:
                 layout = KeyboardLayoutIT(kbd)
-                print("Layout: IT")
+                return "Layout: IT"
             else:
-                print("Layout IT not available (keyboard_layout_win_it not installed)")
+                return "Layout IT not available"
     elif verb == "CIPHER" and len(parts) >= 2:
         if cipher_key:
             try:
@@ -170,7 +170,12 @@ while True:
                 cmd = raw.decode("utf-8").strip()
                 print("raw bytes:", raw)
                 print("cmd:", repr(cmd))
-                handle_command(cmd)
+                response = handle_command(cmd)
+                if response:
+                    try:
+                        uart_service.write((response + "\n").encode("utf-8"))
+                    except Exception:
+                        pass
     elif ble_was_connected:
         print("BLE disconnected, re-advertising...")
         ble_was_connected = False
