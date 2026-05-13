@@ -136,13 +136,13 @@ def handle_command(cmd):
         lang = parts[1].upper()
         if lang == "EN":
             layout = KeyboardLayoutUS(kbd)
-            print("Layout: EN")
+            uart_service.write(b"Layout: EN\n")
         elif lang == "IT":
             if _HAS_IT_LAYOUT:
                 layout = KeyboardLayoutIT(kbd)
-                print("Layout: IT")
+                uart_service.write(b"Layout: IT\n")
             else:
-                print("Layout IT not available (keyboard_layout_win_it not installed)")
+                uart_service.write(b"Layout IT not available\n")
     elif verb == "CIPHER" and len(parts) >= 2:
         if cipher_key:
             try:
