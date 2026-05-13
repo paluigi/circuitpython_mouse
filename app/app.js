@@ -266,12 +266,15 @@ const SVG_EYE_OPEN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
 const SVG_EYE_OFF  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
 
 // --- Settings: pre-shared key + worker URL ---
-const keyInput          = document.getElementById('cipher-key');
-const btnEyeKey         = document.getElementById('btn-eye-key');
-const btnSaveSettings   = document.getElementById('btn-save-settings');
-const settingsSavedMsg  = document.getElementById('settings-saved-msg');
+const LAYOUT_STORAGE_KEY    = 'keyboardLayout';
+const keyInput              = document.getElementById('cipher-key');
+const btnEyeKey             = document.getElementById('btn-eye-key');
+const btnSaveSettings       = document.getElementById('btn-save-settings');
+const settingsSavedMsg      = document.getElementById('settings-saved-msg');
+const keyboardLayoutSelect  = document.getElementById('keyboard-layout');
 
 keyInput.value = getCipherPassword();
+keyboardLayoutSelect.value = localStorage.getItem(LAYOUT_STORAGE_KEY) ?? 'EN';
 
 btnEyeKey.innerHTML = SVG_EYE_OPEN;
 btnEyeKey.addEventListener('click', () => {
@@ -284,6 +287,11 @@ btnSaveSettings.addEventListener('click', () => {
   const pwd = keyInput.value.trim();
   if (pwd) localStorage.setItem(CIPHER_STORAGE_KEY, pwd);
   localStorage.setItem(DERIVER_URL_KEY, deriverUrlInput.value.trim());
+  const layout = keyboardLayoutSelect.value;
+  localStorage.setItem(LAYOUT_STORAGE_KEY, layout);
+  if (rxCharacteristic) {
+    sendCommand('LAYOUT ' + layout);
+  }
   settingsSavedMsg.style.visibility = 'visible';
   setTimeout(() => { settingsSavedMsg.style.visibility = 'hidden'; }, 2000);
 });

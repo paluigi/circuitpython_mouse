@@ -8,6 +8,11 @@ from adafruit_hid.mouse import Mouse
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.keyboard_layout_us import KeyboardLayoutUS
 from adafruit_hid.keycode import Keycode
+try:
+    from keyboard_layout_win_it import KeyboardLayout as KeyboardLayoutIT
+    _HAS_IT_LAYOUT = True
+except ImportError:
+    _HAS_IT_LAYOUT = False
 from adafruit_debouncer import Debouncer
 import adafruit_ble
 from adafruit_ble.advertising.standard import ProvideServicesAdvertisement
@@ -82,7 +87,7 @@ def _decrypt_cipher(b64_payload):
 
 
 def handle_command(cmd):
-    global status, move_index, last_movement
+    global status, move_index, last_movement, layout
     cmd = cmd.strip()
     parts = cmd.split()
     verb = parts[0].upper() if parts else ""
@@ -127,6 +132,17 @@ def handle_command(cmd):
         if key is not None:
             kbd.press(key)
             kbd.release_all()
+    elif verb == "LAYOUT" and len(parts) >= 2:
+        lang = parts[1].upper()
+        if lang == "EN":
+            layout = KeyboardLayoutUS(kbd)
+            print("Layout: EN")
+        elif lang == "IT":
+            if _HAS_IT_LAYOUT:
+                layout = KeyboardLayoutIT(kbd)
+                print("Layout: IT")
+            else:
+                print("Layout IT not available (keyboard_layout_win_it not installed)")
     elif verb == "CIPHER" and len(parts) >= 2:
         if cipher_key:
             try:
