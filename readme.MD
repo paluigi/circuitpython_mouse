@@ -48,7 +48,7 @@ Press the button on the board to toggle the auto-movement on/off. The LED indica
 
 The board advertises a Nordic UART BLE service. You can connect using:
 
-- The **Progressive Web App** in `app/` (see [Web App](#web-app) section below)
+- The **Progressive Web App** (see [Web App](#web-app) section below)
 - Any BLE UART app such as [Adafruit Bluefruit Connect](https://learn.adafruit.com/bluefruit-le-connect)
 
 Send the following text commands (terminated with a newline):
@@ -87,7 +87,7 @@ The `CIPHER` command lets the web app send sensitive text (e.g. passwords) over 
 
 1. Choose a strong password and write it as the only line in `device/secret.txt`.
 2. Copy `secret.txt` to `CIRCUITPY/secret.txt`.
-3. Open the **Cipher** tab in the web app, enter the same password in the **Pre-shared Key** field, and click **Save** — it is stored in the browser's `localStorage` and persists across sessions.
+3. Open the **Settings** tab in the web app, enter the same password in the **Pre-shared Key** field, and click **Save** — it is stored in the browser's `localStorage` and persists across sessions.
 
 > **Security note:** AES-128-CTR with a random IV protects against passive BLE sniffing. The password itself is stored in plaintext on the device (`secret.txt`) and in `localStorage` in the browser, so physical access to either device defeats the protection.
 
@@ -96,6 +96,8 @@ The `CIPHER` command lets the web app send sensitive text (e.g. passwords) over 
 ## Web App
 
 A Progressive Web App (PWA) is included in `app/` to control the device from Android (or any browser with Web Bluetooth support, such as Chrome on Android or desktop Chrome/Edge).
+
+Hosted on GitHub Pages: [paluigi.github.io/circuitpython_mouse](https://paluigi.github.io/circuitpython_mouse/)
 
 ### Features
 
@@ -115,7 +117,7 @@ A Progressive Web App (PWA) is included in `app/` to control the device from And
 - Chrome on Android (or any Chromium-based browser with Web Bluetooth)
 - The app **must be served over HTTPS** — Web Bluetooth does not work over plain HTTP
 
-### Running with Docker
+### Self-hosting with Docker
 
 The app is packaged as a Docker container served by nginx. It listens on HTTP port 80 — TLS must be terminated by your reverse proxy (nginx, Traefik, Caddy, etc.), which is required for Web Bluetooth to work.
 
@@ -126,88 +128,11 @@ docker compose -f app/docker-compose.yml up -d --build
 
 The app is then available at `http://<server-ip>:9090`. Point your reverse proxy to that address and expose it over HTTPS.
 
-**Reverse proxy example (Caddy, with another service on the same domain):**
-```
-marsicolab.ddns.net {
-    handle_path /mouse* {
-        reverse_proxy localhost:9090
-    }
-    handle {
-        reverse_proxy localhost:4443
-    }
-}
-```
-`handle_path` strips the `/mouse` prefix before forwarding to the container, so nginx sees a normal `/` request. The `handle` block catches everything else and forwards it to your existing service.
-
 ### Installing on Android
 
 1. Open the app URL in Chrome
 2. Tap the menu → **Add to Home Screen**
 3. The app installs like a native app and works offline
-
----
-
-## Cloudflare Worker — Password Deriver
-
-A companion Cloudflare Worker (`cloudflare_worker/`) that derives deterministic two-word passwords from a master passphrase using PBKDF2, without ever exposing the master passphrase to the caller.
-
-### How it works
-
-Given a **context** (e.g. `gmail.com`) and a **version** (e.g. `1`), the worker:
-
-1. Normalises inputs: context → trim + lowercase; version → trim.
-2. Constructs a salt: `pw:{context}:v{version}`.
-3. Runs **PBKDF2-HMAC-SHA256** (100,000 iterations, 32-byte output) keyed on the master passphrase.
-4. Converts the 32 output bytes to a 256-bit binary string.
-5. Extracts the first two 11-bit groups (bits 0–10 and 11–21) as BIP39 indices (range 0–2047).
-6. Returns the two corresponding **BIP39 English words** as a JSON response.
-
-The algorithm is deterministic — the same context + version always yields the same word pair — and matches a PowerShell reference implementation.
-
-### API
-
-```
-GET https://<worker-url>/?context=<site>&version=<n>
-```
-
-| Parameter | Description                          | Example      |
-|-----------|--------------------------------------|--------------|
-| `context` | Site or service identifier           | `gmail.com`  |
-| `version` | Password version (increment to rotate) | `1`        |
-
-**Response (200 OK):**
-```json
-{
-  "salt":       "pw:gmail.com:v1",
-  "word1Index": 1234,
-  "word1":      "some",
-  "word2Index": 567,
-  "word2":      "word"
-}
-```
-
-### Setup
-
-The worker requires one secret — the master passphrase — stored as a Cloudflare secret (never in `wrangler.toml` or source code):
-
-```bash
-wrangler secret put MASTER_PASSPHRASE
-```
-
-### Deploying
-
-```bash
-cd cloudflare_worker
-npm install
-npx wrangler deploy
-```
-
-### Local development
-
-```bash
-cd cloudflare_worker
-npx wrangler dev
-```
 
 ---
 
@@ -217,6 +142,7 @@ npx wrangler dev
 app/
 ├── index.html           # UI (buttons, inputs, log)
 ├── app.js               # Web Bluetooth + command logic
+├── about.html           # Project description page
 ├── ble-debug.html       # Standalone BLE debug/test page
 ├── manifest.json        # PWA manifest
 ├── service-worker.js    # Offline caching
@@ -224,20 +150,13 @@ app/
 ├── nginx.conf           # nginx config (gzip, caching, SPA fallback)
 └── docker-compose.yml   # Compose file (port 9090)
 
-cloudflare_worker/
-├── src/
-│   ├── index.js         # Worker entry point (PBKDF2 derivation + BIP39 mapping)
-│   └── bip39.js         # BIP39 English wordlist (2048 words)
-├── wrangler.toml        # Worker name and compatibility settings
-└── package.json         # Dev dependencies (wrangler)
-
 device/
 ├── code.py              # Main CircuitPython script
 ├── secret.txt           # Pre-shared password for CIPHER command (copy to CIRCUITPY/)
 ├── firmware/            # Bootloader updater + CircuitPython 10.1.3 (.uf2)
 └── lib/
-    ├── adafruit_ble/          # BLE + Nordic UART service
-    ├── adafruit_hid/          # USB HID (mouse + keyboard)
+    ├── adafruit_ble/                # BLE + Nordic UART service
+    ├── adafruit_hid/                # USB HID (mouse + keyboard)
     ├── adafruit_debouncer.mpy       # Button debouncing
     ├── adafruit_ticks.mpy           # Timing utility
     ├── keyboard_layout_win_it.mpy   # Italian keyboard layout (Windows)

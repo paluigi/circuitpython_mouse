@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CircuitPython BLE Mouse — About</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #16213e;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #0f3460;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    header h1 { font-size: 1.1rem; font-weight: 600; letter-spacing: 0.02em; }
+
+    header a {
+      background: #0f3460;
+      color: #e0e0e0;
+      border: none;
+      border-radius: 8px;
+      padding: 0.45rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    main {
+      flex: 1;
+      padding: 2rem 1.25rem;
+      max-width: 720px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 1.5rem 0;
+    }
+
+    .hero h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+      color: #93c5fd;
+    }
+
+    .hero p {
+      font-size: 0.95rem;
+      color: #aaa;
+      max-width: 520px;
+      margin: 0 auto 1.25rem;
+      line-height: 1.6;
+    }
+
+    .btn-launch {
+      display: inline-block;
+      background: #1e3a5f;
+      color: #bfdbfe;
+      border-radius: 10px;
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      margin-right: 0.5rem;
+    }
+
+    .btn-gh {
+      display: inline-block;
+      background: #0f3460;
+      color: #e0e0e0;
+      border-radius: 10px;
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    section {
+      background: #16213e;
+      border: 1px solid #0f3460;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+    }
+
+    section h3 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #888;
+      margin-bottom: 1rem;
+    }
+
+    p { line-height: 1.65; font-size: 0.9rem; color: #ccc; }
+
+    ul {
+      padding-left: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    li { font-size: 0.9rem; color: #ccc; line-height: 1.5; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    th {
+      text-align: left;
+      color: #888;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.4rem 0.6rem;
+      border-bottom: 1px solid #0f3460;
+    }
+
+    td {
+      padding: 0.45rem 0.6rem;
+      color: #ccc;
+      border-bottom: 1px solid #0f2040;
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    code {
+      background: #0f3460;
+      color: #93c5fd;
+      border-radius: 4px;
+      padding: 0.1em 0.35em;
+      font-family: monospace;
+      font-size: 0.85em;
+    }
+
+    pre {
+      background: #0d1117;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: #4ade80;
+      overflow-x: auto;
+      line-height: 1.5;
+    }
+
+    .note {
+      background: #1a2a1a;
+      border: 1px solid #166534;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.85rem;
+      color: #bbf7d0;
+      line-height: 1.5;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 0.75rem;
+      color: #555;
+    }
+
+    footer a { color: #3b82f6; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>CircuitPython BLE Mouse</h1>
+  <a href="index.html">Open App</a>
+</header>
+
+<main>
+
+  <div class="hero">
+    <h2>BLE Mouse Controller</h2>
+    <p>A CircuitPython project for continuous mouse movement and keyboard input,
+       controllable wirelessly via Bluetooth from any browser with Web Bluetooth support.</p>
+    <a class="btn-launch" href="index.html">Launch App</a>
+    <a class="btn-gh" href="https://github.com/paluigi/circuitpython_mouse" target="_blank">GitHub</a>
+  </div>
+
+  <section>
+    <h3>Hardware</h3>
+    <p>Designed for the <strong>MDBT50Q-RX</strong> (nRF52840) running CircuitPython 10.
+       The board acts as a USB HID device (mouse + keyboard) connected to a PC, phone, or tablet,
+       while being controlled wirelessly from a second device over BLE UART.</p>
+  </section>
+
+  <section>
+    <h3>Web App Features</h3>
+    <ul>
+      <li>Connect / disconnect to the board via BLE (requires Chrome or any Chromium-based browser)</li>
+      <li>Auto-movement: Start, Stop, Toggle — keeps the cursor active to prevent screensaver</li>
+      <li>Mouse controls: directional pad, custom X/Y move, left/middle/right click, scroll</li>
+      <li><strong>Type Text</strong> — send text to be typed via USB HID on the connected PC</li>
+      <li><strong>Cipher Text</strong> — AES-128-CTR encrypted text; the device decrypts and types it, protecting passwords over BLE</li>
+      <li><strong>Keyboard Layout</strong> (Settings) — select English (US) or Italian to match the OS of the destination machine</li>
+      <li>Installable as a PWA on Android</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>BLE Commands</h3>
+    <table>
+      <thead>
+        <tr><th>Command</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>START</code></td><td>Enable auto-movement</td></tr>
+        <tr><td><code>STOP</code></td><td>Disable auto-movement</td></tr>
+        <tr><td><code>TOGGLE</code></td><td>Toggle auto-movement on/off</td></tr>
+        <tr><td><code>MOVE x y</code></td><td>Move mouse by x,y pixels</td></tr>
+        <tr><td><code>CLICK [LEFT|RIGHT|MIDDLE]</code></td><td>Mouse click</td></tr>
+        <tr><td><code>SCROLL n</code></td><td>Scroll n steps (positive = up)</td></tr>
+        <tr><td><code>TYPE text</code></td><td>Type text via USB HID keyboard</td></tr>
+        <tr><td><code>LAYOUT EN</code></td><td>Switch to English (US) keyboard layout</td></tr>
+        <tr><td><code>LAYOUT IT</code></td><td>Switch to Italian keyboard layout</td></tr>
+        <tr><td><code>CIPHER &lt;b64&gt;</code></td><td>Decrypt AES-128-CTR payload and type it</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h3>Keyboard Layout</h3>
+    <p>The layout setting on the dongle must match the OS keyboard layout of the machine it is
+       plugged into — not the machine running the browser. If they differ, special characters
+       (like <code>@</code>) will produce the wrong output.</p>
+    <br>
+    <p>The Italian layout requires <code>keyboard_layout_win_it.mpy</code> and
+       <code>keycode_win_it.mpy</code> in the <code>/lib</code> folder on the CIRCUITPY drive
+       (available from the
+       <a href="https://github.com/Neradoc/Circuitpython_Keyboard_Layouts/releases" target="_blank" style="color:#3b82f6;">
+       Neradoc keyboard layouts releases</a>).</p>
+  </section>
+
+  <section>
+    <h3>Cipher — Secure Password Typing</h3>
+    <p>The Cipher feature lets you type passwords over BLE without sending them in plaintext.
+       The web app encrypts the text with AES-128-CTR using a pre-shared key, and the device
+       decrypts and types it via USB HID.</p>
+    <br>
+    <div class="note">
+      The pre-shared password is stored in <code>secret.txt</code> on the device and in
+      <code>localStorage</code> in the browser. Physical access to either defeats the protection.
+    </div>
+  </section>
+
+  <section>
+    <h3>Requirements</h3>
+    <ul>
+      <li>Chrome or any Chromium-based browser (Web Bluetooth required)</li>
+      <li>The app must be served over <strong>HTTPS</strong> — Web Bluetooth does not work over plain HTTP</li>
+      <li>A paired BLE device running the CircuitPython firmware</li>
+    </ul>
+  </section>
+
+</main>
+
+<footer>
+  <p>MIT License · <a href="https://github.com/paluigi/circuitpython_mouse" target="_blank">github.com/paluigi/circuitpython_mouse</a></p>
+</footer>
+
+</body>
+</html>
