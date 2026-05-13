@@ -29,6 +29,11 @@ Copy the following onto the `CIRCUITPY` drive:
 - `device/lib/` → `CIRCUITPY/lib/`
 - `device/secret.txt` → `CIRCUITPY/secret.txt` *(required for the CIPHER command — edit it first)*
 
+> **Linux users:** always run `sync` after copying files to avoid empty files caused by the OS flushing writes after the device reboots:
+> ```bash
+> cp device/code.py /media/$USER/CIRCUITPY/ && sync
+> ```
+
 The code runs automatically on boot.
 
 ---
@@ -60,6 +65,8 @@ Send the following text commands (terminated with a newline):
 | `CLICK MIDDLE`  | Middle click                                                |
 | `SCROLL n`      | Scroll by n steps (positive=up, negative=down)              |
 | `TYPE text`     | Type text via USB HID keyboard (printable ASCII only, e.g. `TYPE Hello World`) |
+| `LAYOUT EN`     | Switch the keyboard layout to English (US)                  |
+| `LAYOUT IT`     | Switch the keyboard layout to Italian (Windows)             |
 | `CIPHER <b64>`  | Decrypt an AES-128-CTR payload and type the result (see [Cipher](#cipher)) |
 
 The board re-advertises automatically after a disconnect.
@@ -97,6 +104,7 @@ A Progressive Web App (PWA) is included in `app/` to control the device from And
 - Move controls: X/Y number inputs and an arrow pad
 - **Type Text** — send text to be typed via the USB HID keyboard on the connected PC
 - **Cipher Text** — encrypt and send sensitive text using AES-128-CTR; the device decrypts and types it
+- **Keyboard Layout** (Settings tab) — select English (US) or Italian; saved in `localStorage` and sent to the device on Save. The layout must match the OS keyboard layout of the machine the dongle is plugged into
 - Custom command text box — type any raw command and press Send or Enter
 - Live log showing sent commands and replies from the device
 - Installable on Android as a home screen app (PWA)
@@ -230,8 +238,10 @@ device/
 └── lib/
     ├── adafruit_ble/          # BLE + Nordic UART service
     ├── adafruit_hid/          # USB HID (mouse + keyboard)
-    ├── adafruit_debouncer.mpy # Button debouncing
-    └── adafruit_ticks.mpy     # Timing utility
+    ├── adafruit_debouncer.mpy       # Button debouncing
+    ├── adafruit_ticks.mpy           # Timing utility
+    ├── keyboard_layout_win_it.mpy   # Italian keyboard layout (Windows)
+    └── keycode_win_it.mpy           # Italian keycodes
 ```
 
 ---
